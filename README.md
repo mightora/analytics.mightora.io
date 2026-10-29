@@ -42,7 +42,7 @@ data/coverage.json                 DNS coverage snapshot
 data/last-run.json                 Latest collection result
 ```
 
-`data/daily` files are never pruned as years pass. Successful dimensions are skipped. Missing ones are retried; errors do not overwrite successful records. Git history preserves revisions. Git is durable only while the repository and its history are retained: periodically clone it elsewhere for an independent backup. Workflow artifacts expire after one day; the permanent data is in Git, not an expiring Actions artifact.
+`data/daily` files are never pruned as years pass. Successful dimensions are skipped. Missing ones are retried; errors do not overwrite successful records. The initial backfill can take several hours on a rate-limited account; successful batches are committed approximately every three minutes during collection. Later runs resume missing dimensions. Git history preserves revisions. Git is durable only while the repository and its history are retained: periodically clone it elsewhere for an independent backup. Workflow artifacts expire after one day; the permanent data is in Git, not an expiring Actions artifact.
 
 ## Local use
 

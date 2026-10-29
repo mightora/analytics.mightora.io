@@ -24,7 +24,8 @@ export function mergeGroups(rows, dimension, metric = 'count') {
 export function redactPath(value) {
   return String(value || '/').split(/[?#]/)[0]
     .replace(/[\w.+-]+@[^/]+\.[^/]+/g, '[email]')
-    .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/gi, '[id]')
+    .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, '[id]')
+    .replace(/\/\d{10,}(?=\/|$)/g, '/[id]')
     .replace(/\/[^/]{64,}/g, '/[redacted]');
 }
 export function csvCell(value) {

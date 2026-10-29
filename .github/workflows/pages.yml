@@ -19,7 +19,7 @@ concurrency:
 jobs:
   archive-and-build:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 360
     permissions:
       contents: write
     outputs:
@@ -31,6 +31,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Configure archive commit identity
+        run: |
+          git config user.name "Mightora Analytics Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Record unattended collection readiness
+        env:
+          COLLECTION_READY: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+        run: |
+          node --input-type=module - <<'JS'
+          import {atomicJson} from './scripts/cloudflare.mjs';
+          await atomicJson('data/automation.json', {enabled:process.env.COLLECTION_READY==='true',provider:'github-actions',scheduleUtc:'23 7 * * *',checkedAt:new Date().toISOString()});
+          JS
       - name: Collect previous UTC day and recover missing history
         id: collect
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
@@ -53,7 +65,7 @@ jobs:
           git add data
           if ! git diff --cached --quiet; then
             git commit -m "Archive Cloudflare analytics for the previous UTC day"
-            git push
+            git push origin HEAD:main
           fi
       - uses: actions/upload-pages-artifact@v3
         with:

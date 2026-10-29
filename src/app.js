@@ -104,7 +104,20 @@ function renderCalendar(){
   $('calendar-chart').innerHTML=`<svg viewBox="0 0 ${W} 160" role="img" aria-label="Daily activity heatmap for the last 365 days; missing days are hatched."><defs><pattern id="missing-hatch" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="5" fill="var(--bg)"/><path d="M0 5L5 0" stroke="var(--border)" stroke-width="1.5"/></pattern></defs>${labels}<text x="0" y="35">Mon</text><text x="0" y="73">Wed</text><text x="0" y="111">Fri</text>${squares}</svg>`;
 }
 function renderDetail(days){
-  const rows=groups(days,state.detail);const dimensionNames={paths:state.source==='edge'?'clientRequestPath':'requestPath',referrers:state.source==='edge'?'clientRefererHost':'refererHost',devices:state.source==='edge'?'clientDeviceType':'deviceType',protocols:'clientRequestHTTPProtocol',hourly:'datetimeHour'};
+  if(state.detail==='daily'){
+    const rows=timeSeries(days).filter(r=>r.date.includes(state.search));
+    const wide=state.source==='edge'&&state.host==='all';
+    const header=['UTC date',state.source==='edge'?'Requests':'Page views',...(wide?['Bytes','Cached requests','Cached bytes','Threats','Page requests','HTTPS requests','HTTPS bytes','Daily unique IPs']:[]),'Availability'];
+    $('detail-table').innerHTML=table(header,rows.map(r=>{const d=days.find(d=>d.date===r.date);return [r.date,r.available?nf.format(r.requests):'—',...(wide?['bytes','cachedRequests','cachedBytes','threats','pageViews','encryptedRequests','encryptedBytes'].map(k=>r.available?nf.format(d.edge.summary[k]):'—').concat(r.available?nf.format(d.edge.dailyUniqueIPs):'—'):[]),r.available?'Available':'Unavailable'];}),header.map((_,i)=>i).filter(i=>i>0&&i<header.length-1));
+    $('detail-note').textContent='Every archived daily metric. Unique IPs are not unique people and are never added across days. HTTPS metrics and Cloudflare page requests come from the daily aggregate dataset.';$('show-more').hidden=true;return;
+  }
+  if(state.detail==='content'||(state.detail==='status'&&state.source==='edge'&&state.host==='all')){
+    const content=state.detail==='content';const rows=state.source==='edge'&&state.host==='all'?days.flatMap(d=>d.edge?.maps?.[content?'contentTypeMap':'responseStatusMap']||[]):[];
+    const dimension=content?'edgeResponseContentTypeName':'edgeResponseStatus',items=mergeGroups(rows,dimension,'requests').filter(r=>r.name.toLowerCase().includes(state.search.toLowerCase()));
+    $('detail-table').innerHTML=table([content?'Content type':'HTTP status code','Requests'],items.map(r=>[r.name,nf.format(r.value)]),[1]);
+    $('detail-note').textContent=`Daily aggregate maps for ${days.filter(d=>d.edge?.mapsStatus==='available').length} of ${days.length} selected days. Select all sites in the HTTP source to inspect these zone-wide maps.`;$('show-more').hidden=true;return;
+  }
+  const rows=groups(days,state.detail);const dimensionNames={paths:state.source==='edge'?'clientRequestPath':'requestPath',referrers:state.source==='edge'?'clientRefererHost':'refererHost',devices:state.source==='edge'?'clientDeviceType':'deviceType',cache:'cacheStatus',status:'edgeResponseStatus',operatingSystems:'userAgentOS',protocols:'clientRequestHTTPProtocol',hourly:'datetimeHour'};
   const dimension=dimensionNames[state.detail],map=new Map();
   for(const r of rows){const host=r.dimensions.clientRequestHTTPHost??r.dimensions.requestHost;const name=r.dimensions[dimension]||'(not specified)';const key=host+'\u0000'+name;const old=map.get(key)||{host,name,count:0,bytes:0};old.count+=r.count;old.bytes+=r.sum?.edgeResponseBytes||0;map.set(key,old);}
   const filtered=[...map.values()].filter(r=>(r.host+' '+r.name).toLowerCase().includes(state.search.toLowerCase())).sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name));
@@ -119,7 +132,7 @@ function renderCoverage(){
   $('coverage-summary').textContent=`${archive.days.filter(d=>d.edge?.status==='available').length} daily HTTP summaries archived · ${proxied.length} proxied hostnames · ${hosts.length-proxied.length} DNS-only hostnames · ${rumHosts.length} hostnames observed in Web Analytics.`;
   $('coverage-table').innerHTML=table(['Hostname','Current collection coverage'],hosts.map(host=>[host,coverageForHost(host,records,rumHosts)]));
   const last=archive.lastRun;const age=archive.days.length?(Date.now()-Date.parse(archive.days.at(-1).date+'T00:00:00Z'))/DAY:Infinity;
-  $('run-health').textContent=`Latest archive: ${archive.days.at(-1)?.date||'not yet collected'} UTC. ${last?`Last collector run: ${last.status}, ${last.failures||0} failed batches.`:'Initial snapshot imported using the authenticated Cloudflare connection.'} ${age>3?'The archive is stale. Check the daily workflow and Cloudflare Actions secret.':'The latest snapshot is recent.'}`;
+  $('run-health').textContent=`Latest archive: ${archive.days.at(-1)?.date||'not yet collected'} UTC. ${last?`Last collector run: ${last.status}, ${last.failures||0} failed batches.`:'Initial snapshot imported using the authenticated Cloudflare connection.'} ${archive.automation?.enabled===false?'Automatic collection is awaiting configuration. ':''}${age>3?'The archive is stale. Check the daily workflow and Cloudflare Actions secret.':'The latest snapshot is recent.'}`;
   const s=archive.settings,rows=[];
   for(const [label,value]of [['Daily HTTP summaries',s?.edge?.httpRequests1dGroups],['Detailed HTTP breakdowns',s?.edge?.httpRequestsAdaptiveGroups],['Browser page views',s?.rum]])if(value)rows.push([label,value.enabled?'Available':'Restricted',`${Math.round(value.notOlderThan/86400)} days`,`${Math.round(value.maxDuration/86400)} days`]);
   $('retention-info').innerHTML=table(['Dataset','Access','Source retention','Maximum query window'],rows)+`<p>These limits are discovered from this account rather than assumed from the plan. Archiving preserves successfully retrieved data after these source windows expire.</p>`;
@@ -128,8 +141,8 @@ function render(){
   const days=selectedDays(),series=timeSeries(days),available=series.filter(r=>r.available).length;
   $('selection-label').textContent=`${dateLabel(state.start)} — ${dateLabel(state.end)} · ${state.host==='all'?'All recorded sites':state.host}`;
   $('precision-label').textContent=state.source==='edge'&&state.host==='all'?'Daily aggregate · all request types':'Adaptive estimates · all returned groups';
-  $('notice').hidden=available===days.length&&available>0;
-  $('notice').textContent=`${available} of ${days.length} selected days are available for this source and site. Missing days are gaps, never zero. DNS-only sites have no Cloudflare edge request count.`;
+  $('notice').hidden=available===days.length&&available>0&&archive.automation?.enabled!==false;
+  $('notice').textContent=(archive.automation?.enabled===false?'Daily collection has not been activated. This page shows the initial imported snapshot. ':'')+(available!==days.length||available===0?`${available} of ${days.length} selected days are available for this source and site. Missing days are gaps, never zero. DNS-only sites have no Cloudflare edge request count.`:'');
   $('chart-series-label').textContent=state.source==='edge'?'All HTTP requests':'Browser page views';
   $('traffic-note').textContent=`${available} days of data shown. ${state.source==='edge'?'Bots, assets, API calls and errors remain included wherever visible to Cloudflare.':'Browser beacon observations are separate from HTTP requests and are never added to them.'} ${state.source==='edge'&&state.host==='all'?'Site and path breakdowns have a shorter source retention window than the daily summary.':''}`;
   document.querySelector('[data-metric="bytes"]').disabled=state.source==='rum';

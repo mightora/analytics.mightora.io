@@ -17,7 +17,8 @@ const days=start?dayRange(start,end).map(d=>byDate.get(d)||emptyDay(d)):[];
 const settings=await exists('data/source-settings.json')?await readJson('data/source-settings.json'):null;
 const coverage=await exists('data/coverage.json')?await readJson('data/coverage.json'):null;
 const lastRun=await exists('data/last-run.json')?await readJson('data/last-run.json'):null;
-const dashboard={schemaVersion:1,generatedAt:new Date().toISOString(),name:config.name,timezone:'UTC',settings,coverage,lastRun,days:days.map(d=>({...d,edge:{...d.edge,raw:undefined}}))};
+const automation=await exists('data/automation.json')?await readJson('data/automation.json'):null;
+const dashboard={schemaVersion:1,generatedAt:new Date().toISOString(),name:config.name,timezone:'UTC',settings,coverage,lastRun,automation,days:days.map(d=>({...d,edge:{...d.edge,raw:undefined}}))};
 await atomicJson('data/dashboard.json',dashboard);
 const entries=[];for(const path of daily.sort()){const data=await readFile(path);const d=JSON.parse(data);entries.push({date:d.date,path,sha256:sha(data),bytes:data.length,edge:d.edge.status,details:d.details.status,rum:d.rum.status});}
 await atomicJson('data/index.json',{schemaVersion:1,generatedAt:dashboard.generatedAt,start,end,timezone:'UTC',files:entries});

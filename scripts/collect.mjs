@@ -1,5 +1,7 @@
 import {readFile, appendFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
 import {DAY, dayRange, isoDay} from '../src/stats.mjs';
 import {gql, request, atomicJson, archivePath, exists, readJson, settingsQuery, summaryQuery, fetchCompleteDimension, EDGE_DIMENSIONS, RUM_DIMENSIONS} from './cloudflare.mjs';
 
@@ -41,7 +43,17 @@ export async function collect({days=365, now=Date.now(), queryFn=gql, requestFn=
   const archive=new Map();
   for(const date of dates) archive.set(date,await exists(archivePath(date)) ? await readJson(archivePath(date)) : emptyDay(date,new Date(now).toISOString()));
   // Commit each successful batch to disk. Failed later batches leave earlier ones recoverable.
-  const save=async slice=>{for(const date of slice) await atomicJson(archivePath(date),archive.get(date));};
+  let checkpointAt=Date.now();
+  const runGit=promisify(execFile);
+  const checkpoint=async(force=false)=>{
+    if(process.env.GITHUB_ACTIONS!=='true'||(!force&&Date.now()-checkpointAt<180000))return;
+    await runGit('git',['add','data/daily','data/source-settings.json']);
+    let changed=false;
+    try{await runGit('git',['diff','--cached','--quiet']);}catch(e){if(e.code===1)changed=true;else throw e;}
+    if(changed){await runGit('git',['commit','-m','Checkpoint Cloudflare analytics archive']);await runGit('git',['push','origin','HEAD:main']);}
+    checkpointAt=Date.now();
+  };
+  const save=async slice=>{for(const date of slice) await atomicJson(archivePath(date),archive.get(date));await checkpoint();};
   let failures=0;
   const firstSummary=earliestFullDay(edgeSettings.httpRequests1dGroups.notOlderThan,now);
   const neededSummary=dates.filter(d=>d>=firstSummary && (archive.get(d).edge.status!=='available'||archive.get(d).edge.mapsStatus==='partial'));
@@ -64,11 +76,15 @@ export async function collect({days=365, now=Date.now(), queryFn=gql, requestFn=
     }
     const first=earliestFullDay(settings.notOlderThan,now);
     for(const dimension of Object.keys(dimensions)) {
+      // An observed empty host dataset proves the day has no events to group further.
+      if(dimension!=='hosts')for(const date of dates){const item=archive.get(date)[key];if(Array.isArray(item.datasets?.hosts)&&item.datasets.hosts.length===0)item.datasets[dimension]=[];}
       const needed=dates.filter(d=>d>=first && !Array.isArray(archive.get(d)[key].datasets?.[dimension]));
-      await chunks(needed,Math.min(7,Math.max(1,Math.floor(settings.maxDuration/86400))),async slice=>{
+      // Small daily windows and limits keep query cost reasonable on the Free plan.
+      // High-cardinality days are recursively split; no tail groups are discarded.
+      await chunks(needed,1,async slice=>{
         console.log(`Archiving ${source}/${dimension} ${slice[0]} → ${slice.at(-1)}`);
         try {
-          const rows=await fetchCompleteDimension(config,slice[0]+'T00:00:00Z',isoDay(Date.parse(slice.at(-1))+DAY)+'T00:00:00Z',dimension,source,queryFn,Math.min(500,settings.maxPageSize));
+          const rows=await fetchCompleteDimension(config,slice[0]+'T00:00:00Z',isoDay(Date.parse(slice.at(-1))+DAY)+'T00:00:00Z',dimension,source,queryFn,Math.min(100,settings.maxPageSize));
           for(const date of slice) {
             const item=archive.get(date)[key]; item.datasets ??= {};
             item.datasets[dimension]=rows.filter(r=>r.dimensions.date===date);
@@ -88,6 +104,7 @@ export async function collect({days=365, now=Date.now(), queryFn=gql, requestFn=
     }
   }
   await save(dates);
+  await checkpoint(true);
   try {
     const records=[];
     for(let page=1;;page++) {
