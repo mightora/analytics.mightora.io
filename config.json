@@ -1,0 +1,12 @@
+{
+  "name": "Mightora Analytics",
+  "domain": "mightora.io",
+  "url": "https://analytics.mightora.io",
+  "repository": "https://github.com/mightora/analytics.mightora.io",
+  "accountId": "27e9f5c6eb9764cb376d72b6782f7c66",
+  "zoneId": "5ff6258936efd32e8e08babf6cece43d",
+  "timezone": "UTC",
+  "backfillDays": 365,
+  "detailDimensions": ["hosts", "paths", "countries", "status", "cache", "devices", "referrers", "protocols", "hourly"],
+  "rumSiteTags": ["49b73c3145044927b8843d228bf68978", "4936b576fc1d44848777b2b06dd52587"]
+}

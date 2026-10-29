@@ -1,0 +1,79 @@
+name: Daily archive and Pages
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '23 7 * * *'
+  workflow_dispatch:
+    inputs:
+      backfill_days:
+        description: 'Look back this many days; existing complete records are skipped'
+        default: '365'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: mightora-analytics-main
+  cancel-in-progress: false
+jobs:
+  archive-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    outputs:
+      archive_failed: ${{ steps.collect.outcome == 'failure' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Collect previous UTC day and recover missing history
+        id: collect
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          BACKFILL_DAYS: ${{ inputs.backfill_days || '365' }}
+        run: node scripts/collect.mjs --days "$BACKFILL_DAYS"
+      - name: Update shared Mightora footer and offline branding
+        run: node scripts/sync-branding.mjs
+      - name: Build online and offline editions
+        run: npm run build
+      - name: Test archive integrity, collector and downloads
+        run: npm test
+      - name: Commit permanent archive
+        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        run: |
+          git config user.name "Mightora Analytics Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if ! git diff --cached --quiet; then
+            git commit -m "Archive Cloudflare analytics for the previous UTC day"
+            git push
+          fi
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+          retention-days: 1
+  deploy:
+    needs: archive-and-build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Surface collection failure after publishing the retained data
+        if: needs.archive-and-build.outputs.archive_failed == 'true'
+        run: |
+          echo "::error::Cloudflare collection failed. Retained data was published; inspect the collection log and CLOUDFLARE_API_TOKEN secret."
+          exit 1

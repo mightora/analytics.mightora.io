@@ -1,0 +1,25 @@
+name: CodeQL
+on:
+  push:
+    branches: [main]
+    paths: ['src/**', 'scripts/**', '.github/workflows/**']
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '47 9 * * 2'
+permissions:
+  contents: read
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          build-mode: none
+      - uses: github/codeql-action/analyze@v3

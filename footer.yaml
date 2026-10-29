@@ -1,0 +1,235 @@
+# Footer navigation links
+# Organise sections into columns 1, 2, or 3.
+# Each section has a title and a list of links (name + url).
+#
+# brands: shown as logo cards in the bottom bar of the footer.
+# Each brand needs: name, url, logo (path or URL), and an optional description.
+
+brands:
+  - name: "mightora.io"
+    url: "https://mightora.io"
+    logo: "https://raw.githubusercontent.com/mightora/mightora.io/main/static/images/mightoraIoLogo4-200x900.png"
+    description: "Free tools for the Power Platform community"
+
+  - name: "Tech Tweedie"
+    url: "https://techtweedie.github.io"
+    logo: "https://raw.githubusercontent.com/mightora/mightora.io/main/static/images/TechTweedie_bw.png"
+    description: "Technical blog and tutorials by Ian Tweedie"
+
+  - name: "Tweed.technology"
+    url: "https://tweed.technology"
+    logo: "https://raw.githubusercontent.com/mightora/mightora.io/main/static/images/tweedTechnologyLogoLight.png"
+    description: "Technology consulting by Ian Tweedie"
+
+# Shared tool links use absolute URLs so they work on any Mightora subdomain.
+# Tool inventory is based on mightora/mightora.io/data/toolhub.yaml plus newer public tool repositories.
+sections:
+  # ── Column 1 ──────────────────────────────────────────────────
+  - title: "Site"
+    column: 1
+    position: 1
+    links:
+      - name: "About"
+        url: "https://mightora.io/about/"
+      - name: "Contact"
+        url: "https://mightora.io/contact/"
+      - name: "Privacy Policy"
+        url: "https://mightora.io/privacy-policy/"
+      - name: "Cookie Policy"
+        url: "https://mightora.io/cookie-policy/"
+      - name: "Terms"
+        url: "https://mightora.io/terms/"
+
+  - title: "Mightora"
+    column: 1
+    position: 2
+    links:
+      - name: "All Tools"
+        url: "https://mightora.io/tools/"
+      - name: "FAQ"
+        url: "https://mightora.io/faq/"
+
+  - title: "Power Platform Development"
+    column: 1
+    position: 3
+    links:
+      - name: "Solution Explorer"
+        url: "https://solution-explorer.mightora.io/"
+      - name: "REST Builder"
+        url: "https://rest.mightora.io/"
+      - name: "FetchFlow"
+        url: "https://fetchflow.mightora.io/"
+      - name: "Calculate Elapsed Time"
+        url: "https://mightora.io/tools/pcf/calculate-elapsed-time/"
+      - name: "iFrame with Split URL"
+        url: "https://mightora.io/tools/pcf/iframe-with-split-url/"
+      - name: "Developer Tools Install Script"
+        url: "https://mightora.io/tools/developer/tools-quick-install/"
+      - name: "Dataverse Tools (Beta)"
+        url: "https://dataverse-tools.mightora.io/"
+      - name: "Security Plane Builder"
+        url: "https://security-plane-builder.mightora.io/"
+
+  - title: "Power BI & Analytics"
+    column: 1
+    position: 4
+    links:
+      - name: "Power BI Diff"
+        url: "https://power-bi-diff.mightora.io/"
+      - name: "Semantic Model"
+        url: "https://semantic-model.mightora.io/"
+      - name: "Power BI Inspector"
+        url: "https://powerbi-inspector.mightora.io/"
+      - name: "DAX"
+        url: "https://dax.mightora.io/"
+
+  - title: "Debugging & Diagnostics"
+    column: 1
+    position: 5
+    links:
+      - name: "HAR Analyzer"
+        url: "https://har.mightora.io/"
+      - name: "Code Diff"
+        url: "https://code-diff.mightora.io/"
+      - name: "JSON Explorer"
+        url: "https://json-explorer.mightora.io/"
+
+  # ── Column 2 ──────────────────────────────────────────────────
+  - title: "Power Automate & Connectors"
+    column: 2
+    position: 1
+    links:
+      - name: "Expression Lab"
+        url: "https://expression-lab.mightora.io/"
+      - name: "Custom Connector Builder"
+        url: "https://custom-connector-builder.mightora.io/"
+      - name: "Regex Tester"
+        url: "https://custom-connector-builder.mightora.io/#/connector/regex-tester"
+      - name: "Markdown / HTML Converter"
+        url: "https://custom-connector-builder.mightora.io/#/connector/markdown-html-converter"
+      - name: "Compare JSON Lists"
+        url: "https://custom-connector-builder.mightora.io/#/connector/compare-json-lists"
+      - name: "Business Rules Calculator"
+        url: "https://custom-connector-builder.mightora.io/#/connector/business-rules-calculator"
+      - name: "Pricing Calculator"
+        url: "https://custom-connector-builder.mightora.io/#/connector/pricing-calculator"
+      - name: "JSON Calculation Engine"
+        url: "https://custom-connector-builder.mightora.io/#/connector/json-calculation-engine"
+      - name: "Calculate Working Day"
+        url: "https://mightora.io/tools/power-automate-connectors/calculate-working-day/"
+      - name: "Email Domain Checker"
+        url: "https://mightora.io/tools/power-automate-connectors/email-domain-checker/"
+      - name: "Multi Filter Array"
+        url: "https://mightora.io/tools/power-automate-connectors/multi-filter-array/"
+      - name: "Proxy"
+        url: "https://mightora.io/tools/power-automate-connectors/proxy/"
+      - name: "Send Email with Graph"
+        url: "https://mightora.io/tools/power-automate-connectors/send-email-with-graph/"
+      - name: "SharePoint with Graph"
+        url: "https://mightora.io/tools/power-automate-connectors/sharepoint-with-graph/"
+      - name: "Auto Tag DevOps Tickets into Emails"
+        url: "https://mightora.io/tools/power-automate-templates/auto-tag-devops-tickets-into-emails/"
+
+  - title: "DevOps & ALM"
+    column: 2
+    position: 2
+    links:
+      - name: "Commit to Repo"
+        url: "https://mightora.io/tools/cicd/commit-to-repo/"
+      - name: "Dataverse 4 Teams Tools"
+        url: "https://mightora.io/tools/cicd/dataverse-4-teams-tools/"
+      - name: "Power Platform Solution Modifier"
+        url: "https://mightora.io/tools/cicd/power-platform-solution-modifier/"
+      - name: "Upload Markdown to Wiki"
+        url: "https://mightora.io/tools/cicd/upload-md-to-wiki/"
+      - name: "Playwright for Power Platform"
+        url: "https://mightora.io/tools/cicd/playwright-for-power-platform/"
+      - name: "Power Platform Documentation Extension"
+        url: "https://mightora.io/tools/cicd/power-platform-documentation-extension/"
+
+  - title: "VS Code Extensions"
+    column: 2
+    position: 3
+    links:
+      - name: "Power Platform Documentation"
+        url: "https://marketplace.visualstudio.com/items?itemName=mightoraio.mightora-power-platform-devOps-extension"
+      - name: "Playwright for Power Platform"
+        url: "https://marketplace.visualstudio.com/items?itemName=mightoraio.mightora-playwright-for-power-platform"
+      - name: "Upload MD To Wiki"
+        url: "https://marketplace.visualstudio.com/items?itemName=mightoraio.upload-md-to-wiki"
+      - name: "Commit to Repo"
+        url: "https://marketplace.visualstudio.com/items?itemName=mightoraio.mightora-commit-to-repo-extension"
+      - name: "Power Platform Solution Modifier"
+        url: "https://marketplace.visualstudio.com/items?itemName=mightoraio.mightora-power-platform-solution-modifier"
+
+  # ── Column 3 ──────────────────────────────────────────────────
+  - title: "Architecture & Planning"
+    column: 3
+    position: 1
+    links:
+      - name: "Architecture Lab"
+        url: "https://architecture-lab.mightora.io/"
+      - name: "Technology Radar"
+        url: "https://radar.mightora.io/"
+      - name: "Roadmaps"
+        url: "https://roadmaps.mightora.io/"
+      - name: "RAAIDD Studio"
+        url: "https://raid.mightora.io/"
+
+  - title: "Presentation & Engagement"
+    column: 3
+    position: 2
+    links:
+      - name: "QR Studio"
+        url: "https://qr.mightora.io/"
+      - name: "Slides Beta"
+        url: "https://beta.slides.mightora.io/"
+      - name: "Feedback"
+        url: "https://feedback.mightora.io/"
+
+  - title: "Connectivity & Utilities"
+    column: 3
+    position: 3
+    links:
+      - name: "Connect"
+        url: "https://connect.mightora.io/"
+
+  - title: "Community"
+    column: 3
+    position: 4
+    links:
+      - name: "GitHub"
+        url: "https://github.com/mightora"
+      - name: "YouTube"
+        url: "https://youtube.com/@techtweedie"
+      - name: "Medium"
+        url: "https://medium.com/@ian.tweedie"
+      - name: "LinkedIn"
+        url: "https://go.iantweedie.biz/LinkedIn-Linktree"
+      - name: "Sessionize"
+        url: "https://sessionize.com/ian-tweedie/"
+      - name: "Power Platform Clinic"
+        url: "https://powerplatformclinic.github.io"
+
+  - title: "Microsoft Learn"
+    column: 3
+    position: 5
+    links:
+      - name: "Calculate Working Day Connector"
+        url: "https://learn.microsoft.com/en-us/connectors/calculateworkingday/"
+      - name: "Email Domain Checker Connector"
+        url: "https://learn.microsoft.com/en-us/connectors/emaildomainchecker/"
+
+  - title: "Contact & Status"
+    column: 3
+    position: 6
+    links:
+      - name: "Contact"
+        url: "https://iantweedie.biz"
+      - name: "Mightora Service Status"
+        url: "https://status.mightora.io/"
+      - name: "All Links"
+        url: "https://linktr.ee/itweedie"
+      - name: "Coaching"
+        url: "https://partners.simply.coach/ian-tweedie"
+
