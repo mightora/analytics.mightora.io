@@ -67,7 +67,7 @@ jobs:
             git commit -m "Archive Cloudflare analytics for the previous UTC day"
             git push origin HEAD:main
           fi
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
           retention-days: 1
