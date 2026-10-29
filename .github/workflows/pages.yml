@@ -83,7 +83,7 @@ jobs:
     steps:
       - name: Deploy GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
       - name: Surface collection failure after publishing the retained data
         if: needs.archive-and-build.outputs.archive_failed == 'true'
         run: |
