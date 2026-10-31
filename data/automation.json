@@ -1,1 +1,1 @@
-{"enabled":false,"provider":"github-actions","scheduleUtc":"23 7 * * *","reason":"Initial snapshot imported; unattended collection needs the read-only Cloudflare Actions secret."}
+{"enabled":false,"provider":"github-actions","scheduleUtc":"23 7 * * *","checkedAt":"2026-10-31T13:44:34.044Z"}
